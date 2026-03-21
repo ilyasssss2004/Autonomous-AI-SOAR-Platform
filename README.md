@@ -12,16 +12,20 @@ The platform doesn't just detect threats; it triages them using real-time threat
 ---
 
 ## 🏗️ Technical Architecture
-The core stack ensures high availability and modularity across the defensive pipeline.
+The platform is distributed across three primary logical nodes, simulating a real-world enterprise environment.
 
-*   **SIEM:** **Wazuh (Manager & Indexer)** — Centralized log analysis, security monitoring, and endpoint telemetry.
-*   **SOAR Orchestrator:** **n8n (Self-hosted)** — The "Brain" of the operation; a modular workflow engine for automated incident response.
-*   **Case Management:** **TheHive 5** — A centralized dashboard for incident tracking, forensic analysis, and audit compliance.
-*   **Target Node (Ubuntu 24.04):** 
+*   **1. Defensive Core (Ubuntu Server)**
+    *   **SIEM:** **Wazuh (Manager & Indexer)** — Centralized log analysis, security monitoring, and endpoint telemetry.
+    *   **SOAR Orchestrator:** **n8n (Self-hosted)** — The "Brain" of the operation; a modular workflow engine for automated incident response.
+    *   **Case Management:** **TheHive 5** — A centralized dashboard for incident tracking, forensic analysis, and audit compliance.
+
+*   **2. Target Node (Ubuntu 24.04 Victim)**
     *   **Web Stack:** Apache2 HTTP Server protected by **ModSecurity 3.0**.
     *   **WAF Integration:** Configured with the **OWASP Core Rule Set (CRS)** to detect and block SQL Injection (SQLi) and other OWASP Top 10 threats in real-time.
     *   **Telemetry:** Hardened with `auditd` (System Auditing) and the **Wazuh Agent** for File Integrity Monitoring (FIM) and log shipping.
-*   **Attack Node:** **Kali Linux** — Dedicated environment for generating adversarial telemetry and testing playbook triggers.
+
+*   **3. Attack Node (Kali Linux)**
+    *   Dedicated environment for generating adversarial telemetry and testing playbook triggers.
 
 ---
 
@@ -31,6 +35,18 @@ The core stack ensures high availability and modularity across the defensive pip
 | **Wazuh Dashboard** | `https://localhost:443` | 443 |
 | **n8n Automation** | `http://localhost:5678` | 5678 |
 | **TheHive** | `http://localhost:9000` | 9000 |
+
+---
+
+## 👁️ Endpoint Visibility & SIEM (Wazuh)
+Before automation can occur, high-fidelity telemetry is required. The Wazuh Manager acts as the central ingestion point, providing real-time visibility into the target environment.
+
+<img width="1853" height="804" alt="image" src="https://github.com/user-attachments/assets/fa17add6-1658-44b8-95ca-9f0a720b579a" />
+
+### Key Telemetry Capabilities:
+*   **MITRE ATT&CK Mapping:** Automatically maps system events (like credential access or lateral movement) to adversarial tactics.
+*   **Vulnerability Detection:** Continuous scanning of installed packages on the Ubuntu endpoint against global CVE databases.
+*   **Security Configuration Assessment (SCA):** Audits the target node against CIS (Center for Internet Security) benchmarks to ensure baseline hardening.
 
 ---
 
