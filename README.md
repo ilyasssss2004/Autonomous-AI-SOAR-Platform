@@ -109,12 +109,14 @@ Each playbook was validated using real-world adversarial techniques from an exte
 ---
 
 ## 🚀 How to Explore this Project
-I have included all technical logic files in this repo:
+The infrastructure is organized into modular deployment directories:
 
-1.  **/n8n:** Exported `.json` workflow files for easy import.
-2.  **/scripts:** Custom Python Active Response logic.
-3.  **/wazuh:** Custom rules (`local_rules.xml`) and configuration snippets.
-4.  **/docker:** `docker-compose.yml` for rapid stack deployment.
+*   **/docker:** 
+    *   `/core-stack`: Contains the `docker-compose.yml` for **Wazuh** and **n8n**.
+    *   `/case-management`: Contains the standalone `docker-compose.yml` for **TheHive 5** and its dependencies (Cassandra/Elasticsearch).
+*   **/n8n:** Exported JSON workflow files for the Master Router and specialized playbooks.
+*   **/scripts:** Custom Python Active Response logic (`web-blocker.py`, `custom_block.py`).
+*   **/wazuh:** Custom XML detection rules and agent configuration snippets.
 
 > **Note:** All API keys and public-facing IPs have been replaced with `{{PLACEHOLDERS}}`.
 
