@@ -12,7 +12,7 @@ The platform doesn't just detect threats; it triages them using real-time threat
 ---
 
 ## 🏗️ Technical Architecture
-The entire core stack is deployed via **Docker**, ensuring high availability and modularity across the defensive pipeline.
+The core stack ensures high availability and modularity across the defensive pipeline.
 
 *   **SIEM:** **Wazuh (Manager & Indexer)** — Centralized log analysis, security monitoring, and endpoint telemetry.
 *   **SOAR Orchestrator:** **n8n (Self-hosted)** — The "Brain" of the operation; a modular workflow engine for automated incident response.
@@ -22,6 +22,17 @@ The entire core stack is deployed via **Docker**, ensuring high availability and
     *   **WAF Integration:** Configured with the **OWASP Core Rule Set (CRS)** to detect and block SQL Injection (SQLi) and other OWASP Top 10 threats in real-time.
     *   **Telemetry:** Hardened with `auditd` (System Auditing) and the **Wazuh Agent** for File Integrity Monitoring (FIM) and log shipping.
 *   **Attack Node:** **Kali Linux** — Dedicated environment for generating adversarial telemetry and testing playbook triggers.
+
+---
+
+### Accessing the Dashboards
+| Service | URL | Default Port |
+| :--- | :--- | :--- |
+| **Wazuh Dashboard** | `https://localhost:443` | 443 |
+| **n8n Automation** | `http://localhost:5678` | 5678 |
+| **TheHive** | `http://localhost:9000` | 9000 |
+
+> **Note:** Ensure you replace all environment variable placeholders and default credentials with your own secure passwords upon deployment.
 
 ---
 
@@ -109,7 +120,7 @@ Each playbook was validated using real-world adversarial techniques from an exte
 ---
 
 ## 📂 How to Explore this Project
-The project files are organized into logical directories based on platform function:
+The infrastructure is organized into modular deployment directories:
 
 *   **/n8n:** Exported JSON workflow files for the Master Router and specialized playbooks.
 *   **/scripts:** Custom Python Active Response logic (`web-blocker.py`, `custom_block.py`).
