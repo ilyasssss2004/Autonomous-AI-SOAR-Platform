@@ -4,7 +4,6 @@
 
 <img width="1130" height="639" alt="soc-automation-architecture" src="https://github.com/user-attachments/assets/02bd3cb4-6f63-4a2e-a8a1-b83ae6f4b404" />
 
-
 ## 📌 Project Overview
 This repository hosts a fully containerized, autonomous Security Operations Center (SOC) pipeline. It bridges the gap between raw telemetry and intelligent response by integrating **Wazuh (SIEM)**, **n8n (SOAR)**, and **Google Gemini (LLM)**.
 
@@ -32,20 +31,12 @@ The automation engine is built on a **1+3 Modular Workflow** design in n8n, opti
 ### 1. Master Alert Dispatcher
 Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert based on the `rule.id` or `group`, and dispatches the payload to the correct specialized Playbook.
 
-<img width="1850" height="766" alt="image" src="https://github.com/user-attachments/assets/9b416242-72c7-4622-ae7b-4597376caaed" />
+<img width="1850" height="766" alt="Master Alert Router Logic" src="https://github.com/user-attachments/assets/9b416242-72c7-4622-ae7b-4597376caaed" />
 
 ### 2. Specialized Playbooks
 *   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110). Includes a caching node to "Drop Duplicates" and enriches IP reputation via AbuseIPDB.
-
-<img width="1847" height="793" alt="image" src="https://github.com/user-attachments/assets/8a2eaa31-8121-4898-afa5-c813d57b6904" />
-
 *   **File Integrity & Malware Defense:** Monitors critical directories (`/var/www/html`, `/etc`). Uses a conditional logic gate ($ThreatScore > 0$) to trigger VirusTotal API lookups.
-
-<img width="1852" height="800" alt="image" src="https://github.com/user-attachments/assets/92155bcc-1cb7-4d82-aaed-1ef3825dfef4" />
-
-*   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts
-
-<img width="1850" height="799" alt="image" src="https://github.com/user-attachments/assets/5e7368bd-c7df-40ce-9342-ca39fce00fae" />
+*   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts.
 
 ---
 
@@ -55,13 +46,11 @@ I developed specialized Python scripts to move the platform from "Passive Monito
 ### 1. `web-blocker.py` (Progressive Defense)
 *   **Logic:** Maintains a local JSON state (`web_offenders.json`) to track "Strikes."
 *   **Behavior:** Strike 1 (60s block) → Strike 2 (300s) → Strike 3 (Permanent/1hr).
-*   **Mechanism:** Performs a "Secret Handshake" with Wazuh 4.x and executes `UFW` commands to insert deny rules.
+*   **Mechanism:** Performs a "Secret Handshake" with Wazuh 4.x and executes `UFW` (Uncomplicated Firewall) commands to insert deny rules.
 
 ### 2. `custom_block.py` (The Terminator)
 *   **Logic:** Designed for high-confidence SSH brute-force attacks.
 *   **Behavior:** Instantly triggers a `UFW` block upon a specific alert ID and logs actions to `/var/log/custom_terminator.log`.
-
----
 
 ---
 
@@ -72,7 +61,7 @@ This platform solves the "Context Gap" by using **Google Gemini** to translate r
 **Audience:** SOC Analysts / Incident Responders  
 **Content:** MITRE ATT&CK Mapping, Enriched IoCs (VirusTotal/AbuseIPDB), and "Next Step" commands for immediate triage.
 
-<img width="1919" height="859" alt="image" src="https://github.com/user-attachments/assets/2097079a-d0a6-429e-a49b-4eb3e1511ae7" />
+<img width="1919" height="859" alt="Slack Tactical Alert" src="https://github.com/user-attachments/assets/2097079a-d0a6-429e-a49b-4eb3e1511ae7" />
 
 ---
 
@@ -80,69 +69,57 @@ This platform solves the "Context Gap" by using **Google Gemini** to translate r
 **Audience:** CISOs / Management  
 **Content:** Risk-based business impact summary, plain-English incident description, and resolution status.
 
-<img width="1919" height="891" alt="image" src="https://github.com/user-attachments/assets/a7cbd280-1947-4734-961e-fc2630427280" />
-
----
+<img width="1919" height="891" alt="Executive Email Report" src="https://github.com/user-attachments/assets/a7cbd280-1947-4734-961e-fc2630427280" />
 
 ---
 
 ## 📂 Incident Case Management: TheHive 5
-To ensure full auditability and compliance, the SOAR pipeline automatically logs every triaged alert into **TheHive**. This removes the manual burden of case creation and ensures that incident responders have a centralized dashboard for investigation.
+To ensure full auditability and compliance, the SOAR pipeline automatically logs every triaged alert into **TheHive**.
 
 <img width="1854" height="803" alt="TheHive Case Management Dashboard" src="https://github.com/user-attachments/assets/d9d7125a-e74c-4d1c-8d78-d710cf8e90c2" />
 
 ### 🛠️ Key Case Management Features:
 *   **Automated Case Creation:** n8n dynamically generates cases with standardized naming conventions (e.g., `SOC Incident: Malware Detected`).
-*   **Categorization & Tagging:** Alerts are automatically tagged by threat type (`brute-force`, `web`, `syscheck`, `malware`) and mapped to MITRE ATT&CK TTPs (e.g., `T1565.001`).
-*   **Observable Attachment:** Malicious IPs and file hashes are attached as "Observables," allowing for rapid pivoting during forensic analysis.
-*   **Intelligent Triage Logic:** Within the **File Integrity & Malware Defense Sub-workflow**, the pipeline utilizes a conditional Logic Gate based on the $ThreatScore$ derived from VirusTotal API responses to prevent alert fatigue:
-    *   **SOC Incident (Score > 0):** Triggered by confirmed malicious hits. This path launches the full AI-reporting chain (Gemini) and multi-channel alerting (Slack/Email).
-<img width="1850" height="797" alt="image" src="https://github.com/user-attachments/assets/a51ea94a-383c-4345-a834-729cd8ab02a4" />
-  
-    *   **SOC Audit (Score = 0):** Triggered for unique or unknown hashes. The system creates a "Silent" Audit Case for forensic record-keeping without firing intrusive notifications.
+*   **Intelligent Triage Logic:** Within the **File Integrity & Malware Defense Sub-workflow**, the pipeline utilizes a conditional Logic Gate based on the $ThreatScore$ derived from VirusTotal API responses:
+    *   **SOC Incident (Score > 0):** High/Medium severity. Launches the full AI-reporting chain and multi-channel alerting.
+    *   **SOC Audit (Score = 0):** Creates a "Silent" Audit Case for forensic record-keeping without firing intrusive notifications.
 
-<img width="1848" height="793" alt="image" src="https://github.com/user-attachments/assets/8dac9703-8bfa-45f3-a88d-cecd3d51af1b" />
-
-
----
+<img width="1850" height="797" alt="Malware Incident Flow" src="https://github.com/user-attachments/assets/a51ea94a-383c-4345-a834-729cd8ab02a4" />
 
 ---
 
 ## ⚔️ Attack Emulation & Playbook Validation
-I executed a range of adversarial techniques—both from external nodes (Kali) and simulated internal compromises—to validate the end-to-end detection-to-response loop for each specialized playbook.
+Each playbook was validated using real-world adversarial techniques from an external Kali Linux node.
 
-### 1. Auth Defense & Credential Access (MITRE T1110)
-*   **External Attack:** SSH Brute Force using Hydra.
-    `hydra -l ubuntu-victim -P /usr/share/wordlists/rockyou.txt ssh://192.168.68.113`
-*   **🛡️ Response:** Wazuh `Rule 100050` detects 4+ failures within 120s. n8n triggers the **Auth Defense Playbook**, executing a permanent UFW block via `custom_block.py` and alerting the SOC via Slack.
+### 1. Auth Defense (MITRE T1110)
+*   **Attack:** SSH Brute Force using Hydra.
+    `hydra -l victim_user -P /path/to/wordlist.txt ssh://192.168.1.X`
+*   **🛡️ Response:** Wazuh detects 4+ failures. n8n triggers the **Auth Defense Playbook**, executing a UFW block via `custom_block.py`.
 
-### 2. Web Application Defense (Apache + ModSecurity)
-*   **External Attack:** SQL Injection (SQLi) payload delivery.
-    `curl "http://192.168.68.113/?id=1'+UNION+SELECT+username,password+FROM+users--"`
-*   **🛡️ Response:** ModSecurity identifies the critical anomaly (Score 23). Wazuh generates a high-severity alert. n8n triggers the **Web Defense Playbook**, executing the `web-blocker.py` script.
-*   **Active Defense:** The attacker's IP is dynamically added to the `UFW` (Uncomplicated Firewall) drop list, effectively "killing" the session before the injection reaches the database logic.
+### 2. Web Application Defense (OWASP Top 10)
+*   **Attack:** SQL Injection (SQLi) payload delivery.
+    `curl "http://192.168.1.X/?id=1'+UNION+SELECT+username,password+FROM+users--"`
+*   **🛡️ Response:** ModSecurity (WAF) identifies the anomaly (Score 23+). n8n triggers the **Web Defense Playbook** to block the attacker IP.
 
 ### 3. File Integrity & Malware Defense (MITRE T1565)
-*   **Malicious Ingress (External Download):** 
-    `wget -O /tmp/eicar.com https://secure.eicar.org/eicar.com.txt`
-*   **Remote Payload Push (via SSH):** 
-    `echo 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' | ssh 192.168.68.107 "cat > /tmp/eicar_push.com"`
-*   **Benign File Creation (Audit Test):** 
-    `echo "Normal website configuration." > /tmp/normal_file.txt`
-*   **🛡️ Response:** Wazuh `syscheck` (FIM) detects the file modification. n8n performs a VirusTotal hash lookup. **EICAR strings** return a high threat score, triggering an **Incident** in TheHive. **Benign files** (Threat Score = 0) are silently logged as **Audits** for forensic record-keeping.
+*   **Attack:** Remote Payload Push via SSH.
+    `echo 'EICAR-ANTIVIRUS-TEST-STRING' | ssh 192.168.1.X "cat > /tmp/eicar.com"`
+*   **🛡️ Response:** Wazuh `syscheck` detects the file modification. n8n performs a VirusTotal hash lookup. EICAR strings return a high threat score, triggering a high-priority incident in TheHive.
+
+---
 
 ## 🚀 How to Explore this Project
-I have included all technical logic files in this repo for community exploration:
+I have included all technical logic files in this repo:
 
-1.  **/n8n:** Import the `.json` files into your n8n instance to view the workflow logic.
-2.  **/scripts:** Review the Python logic for the Active Response scripts.
-3.  **/wazuh:** Contains the custom `ossec.conf` and Wazuh XML rules.
-4.  **/docker:** Use the `docker-compose.yml` to spin up the core stack.
+1.  **/n8n:** Exported `.json` workflow files for easy import.
+2.  **/scripts:** Custom Python Active Response logic.
+3.  **/wazuh:** Custom rules (`local_rules.xml`) and configuration snippets.
+4.  **/docker:** `docker-compose.yml` for rapid stack deployment.
 
-> **Note:** For security, all API keys and private IPs have been replaced with `{{PLACEHOLDERS}}`.
+> **Note:** All API keys and public-facing IPs have been replaced with `{{PLACEHOLDERS}}`.
 
 ---
 
 ### 🤝 Connect with me
-*   **LinkedIn:** [Your Link Here]
-*   **GitHub:** [Your Link Here]
+*   **LinkedIn:** [Your LinkedIn Profile Link]
+*   **GitHub:** [Your GitHub Profile Link]
