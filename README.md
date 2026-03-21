@@ -55,6 +55,14 @@ This platform solves the "Context Gap" by using two distinct LLM prompts to tran
 
 *   **Tactical Alert (Slack):** Provides the SOC analyst with the exact MITRE ATT&CK technique, enriched IoC data, and recommended next steps.
 *   **Executive Brief (Email):** Automatically translates technical telemetry into a high-level business impact summary for management.
+  
+---
+
+## 📢 Multi-Channel Alerting & Reporting
+The platform ensures that the right information reaches the right person at the right time through high-fidelity, AI-enhanced notifications.
+
+*   **Tactical Alerts:** Dispatched to the `#soc-alerts` channel. Includes the Source IP, Geo-Location, Threat Score, and Gemini-generated "Next Steps" for immediate triage.
+*   **Executive Briefs:** Sent via SMTP. Translates raw logs into a risk-based summary, allowing management to understand the business impact without reading technical JSON payloads.
 
 ---
 
