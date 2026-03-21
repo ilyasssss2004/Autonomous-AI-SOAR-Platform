@@ -51,7 +51,7 @@ docker-compose up -d
 
 # 3. Deploy Case Management (TheHive)
 cd ../case-management && docker-compose up -d
-
+```
 ### 4. Accessing the Dashboards
 | Service | URL | Default Port |
 | :--- | :--- | :--- |
