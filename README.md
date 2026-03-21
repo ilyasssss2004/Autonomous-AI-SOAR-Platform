@@ -46,8 +46,17 @@ Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert ba
 
 ### 2. Specialized Playbooks
 *   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110). Includes a caching node to "Drop Duplicates" and enriches IP reputation via AbuseIPDB.
+
+   <img width="1847" height="793" alt="Capture d&#39;écran 2026-03-21 171814" src="https://github.com/user-attachments/assets/5d06e34f-8a8c-4316-ab34-809525f1c54a" />
+
 *   **File Integrity & Malware Defense:** Monitors critical directories (`/var/www/html`, `/etc`). Uses a conditional logic gate ($ThreatScore > 0$) to trigger VirusTotal API lookups.
+
+<img width="1852" height="800" alt="Capture d&#39;écran 2026-03-21 181952" src="https://github.com/user-attachments/assets/2c9b6224-b6c3-4b01-96cd-db18b904d129" />
+
 *   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts.
+
+<img width="1850" height="799" alt="Capture d&#39;écran 2026-03-21 174641" src="https://github.com/user-attachments/assets/5ff80443-1fdf-4302-82ae-92e640ae8fdc" />
+
 
 ---
 
