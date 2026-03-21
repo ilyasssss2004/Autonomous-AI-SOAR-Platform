@@ -32,19 +32,23 @@ The automation engine is built on a **1+3 Modular Workflow** design in n8n, opti
 ### 1. Master Alert Dispatcher
 Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert based on the `rule.id` or `group`, and dispatches the payload to the correct specialized Playbook.
 
+
 <img width="1850" height="766" alt="image" src="https://github.com/user-attachments/assets/9b416242-72c7-4622-ae7b-4597376caaed" />
 
 
 ### 2. Specialized Playbooks
 *   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110). Includes a caching node to "Drop Duplicates" and enriches IP reputation via AbuseIPDB.
 
+
 <img width="1847" height="793" alt="image" src="https://github.com/user-attachments/assets/8a2eaa31-8121-4898-afa5-c813d57b6904" />
 
 *   **File Integrity & Malware Defense:** Monitors critical directories (`/var/www/html`, `/etc`). Uses a conditional logic gate ($ThreatScore > 0$) to trigger VirusTotal API lookups.
 
+
 <img width="1852" height="800" alt="image" src="https://github.com/user-attachments/assets/92155bcc-1cb7-4d82-aaed-1ef3825dfef4" />
 
 *   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts.
+
 
 <img width="1850" height="799" alt="image" src="https://github.com/user-attachments/assets/5e7368bd-c7df-40ce-9342-ca39fce00fae" />
 
