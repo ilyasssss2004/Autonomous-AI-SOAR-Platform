@@ -1,1 +1,31 @@
+version: "3.9"
 
+# --- Autonomous SOC: n8n SOAR Engine ---
+# This service handles the automation logic, threat intelligence enrichment (Gemini/AbuseIPDB),
+# and incident dispatching to Slack and TheHive.
+# ---------------------------------------
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n-soar-engine
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=UTC
+      - N8N_CONCURRENCY_PRODUCTION_LIMIT=1
+      - N8N_PORT=5678
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - soc-net
+
+volumes:
+  n8n_data:
+
+networks:
+  # This network must be created manually or by the Wazuh stack 
+  # for cross-container communication.
+  soc-net:
+    external: true
