@@ -131,5 +131,5 @@ Each playbook was validated using real-world adversarial techniques from an exte
 ---
 
 ### 🤝 Connect with me
-*   **LinkedIn:** [https://www.linkedin.com/in/ilyas-wadgat-tait-b188a1293/](https://www.linkedin.com/in/ilyas-wadgat-tait-b188a1293/)
-*   **GitHub:** [https://github.com/ilyasssss2004](https://github.com/ilyasssss2004)
+*   **LinkedIn:** https://www.linkedin.com/in/ilyas-wadgattait-96551624b
+  
