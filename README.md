@@ -25,49 +25,6 @@ The entire core stack is deployed via **Docker**, ensuring high availability and
 
 ---
 
----
-
-## 🚀 Deployment & Getting Started
-
-### 1. Prerequisites
-Ensure you have **Docker** and **Docker Compose** installed on your Linux host.
-
-### 2. Network Configuration
-The containers communicate over a shared internal bridge. Create this network first to allow cross-stack communication:
-
-```bash
-docker network create soc-net
-```
-
-### 3. Launching the Stack
-Navigate to each component directory and deploy the services. It is required to generate the Wazuh Indexer certificates before starting the SIEM.
-
-```bash
-# 1. Deploy the SIEM (Wazuh)
-cd docker/wazuh
-docker-compose -f generate-indexer-certs.yml run --rm generator
-docker-compose up -d
-
-# 2. Deploy the SOAR Engine (n8n)
-cd ../n8n
-docker-compose up -d
-
-# 3. Deploy Case Management (TheHive)
-cd ../thehive
-docker-compose up -d
-```
-
-### 4. Accessing the Dashboards
-| Service | URL | Default Port |
-| :--- | :--- | :--- |
-| **Wazuh Dashboard** | `https://localhost:443` | 443 |
-| **n8n Automation** | `http://localhost:5678` | 5678 |
-| **TheHive** | `http://localhost:9000` | 9000 |
-
-> **Note:** Before deployment, ensure you replace the environment variable placeholders (e.g., `${INDEXER_PASSWORD}`) in the `docker-compose.yml` files with your own secure credentials.
-
----
-
 ## 🧠 The SOAR Logic (Hub & Spoke Model)
 The automation engine is built on a **1+3 Modular Workflow** design in n8n, optimized for scalability and "Alert Fatigue" reduction.
 
@@ -152,12 +109,8 @@ Each playbook was validated using real-world adversarial techniques from an exte
 ---
 
 ## 📂 How to Explore this Project
-The infrastructure is organized into modular deployment directories:
+The project files are organized into logical directories based on platform function:
 
-*   **/docker:** 
-    *   `/wazuh`: Contains the SIEM stack and SSL certificate generator.
-    *   `/n8n`: Contains the standalone SOAR automation engine.
-    *   `/thehive`: Contains Case Management, Cassandra, and Elasticsearch.
 *   **/n8n:** Exported JSON workflow files for the Master Router and specialized playbooks.
 *   **/scripts:** Custom Python Active Response logic (`web-blocker.py`, `custom_block.py`).
 *   **/wazuh:** Custom XML detection rules and agent configuration snippets.
@@ -167,5 +120,5 @@ The infrastructure is organized into modular deployment directories:
 ---
 
 ### 🤝 Connect with me
-*   **LinkedIn:** [Your LinkedIn Profile Link]
-*   **GitHub:** [Your GitHub Profile Link]
+*   **LinkedIn:** [https://www.linkedin.com/in/ilyas-wadgat-tait-b188a1293/](https://www.linkedin.com/in/ilyas-wadgat-tait-b188a1293/)
+*   **GitHub:** [https://github.com/ilyasssss2004](https://github.com/ilyasssss2004)
