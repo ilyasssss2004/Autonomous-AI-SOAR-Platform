@@ -84,20 +84,27 @@ This platform solves the "Context Gap" by using **Google Gemini** to translate r
 
 ---
 
+---
+
 ## 📂 Incident Case Management: TheHive 5
 To ensure full auditability and compliance, the SOAR pipeline automatically logs every triaged alert into **TheHive**. This removes the manual burden of case creation and ensures that incident responders have a centralized dashboard for investigation.
 
-![TheHive Dashboard](docs/thehive-dashboard.png)
+<img width="1854" height="803" alt="TheHive Case Management Dashboard" src="https://github.com/user-attachments/assets/d9d7125a-e74c-4d1c-8d78-d710cf8e90c2" />
 
 ### 🛠️ Key Case Management Features:
 *   **Automated Case Creation:** n8n dynamically generates cases with standardized naming conventions (e.g., `SOC Incident: Malware Detected`).
 *   **Categorization & Tagging:** Alerts are automatically tagged by threat type (`brute-force`, `web`, `syscheck`, `malware`) and mapped to MITRE ATT&CK TTPs (e.g., `T1565.001`).
 *   **Observable Attachment:** Malicious IPs and file hashes are attached as "Observables," allowing for rapid pivoting during forensic analysis.
-*   **Intelligent Triage (Incident vs. Audit):** To prevent alert fatigue, the pipeline uses a Logic Gate ($ThreatScore > 0$) to differentiate the logging path:
-    *   **SOC Incident (High/Medium Severity):** Triggered by confirmed malicious hashes. Launches the full AI-reporting and multi-channel alerting chain.
-    *   **SOC Audit (Low Severity):** Triggered when a hash is **unique or unknown**. The system creates a "Silent" Audit Case for forensic record-keeping without firing intrusive Slack/Email alerts.
+*   **Intelligent Triage Logic:** Within the **File Integrity & Malware Defense Sub-workflow**, the pipeline utilizes a conditional Logic Gate based on the $ThreatScore$ derived from VirusTotal API responses to prevent alert fatigue:
+    *   **SOC Incident (Score > 0):** Triggered by confirmed malicious hits. This path launches the full AI-reporting chain (Gemini) and multi-channel alerting (Slack/Email).
+<img width="1850" height="797" alt="image" src="https://github.com/user-attachments/assets/a51ea94a-383c-4345-a834-729cd8ab02a4" />
+  
+    *   **SOC Audit (Score = 0):** Triggered for unique or unknown hashes. The system creates a "Silent" Audit Case for forensic record-keeping without firing intrusive notifications.
 
-![Malware Triage Logic](docs/malware-playbook-logic.png)
+<img width="1848" height="793" alt="image" src="https://github.com/user-attachments/assets/8dac9703-8bfa-45f3-a88d-cecd3d51af1b" />
+
+
+---
 
 ---
 
