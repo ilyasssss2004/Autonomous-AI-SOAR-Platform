@@ -32,8 +32,6 @@ The core stack ensures high availability and modularity across the defensive pip
 | **n8n Automation** | `http://localhost:5678` | 5678 |
 | **TheHive** | `http://localhost:9000` | 9000 |
 
-> **Note:** Ensure you replace all environment variable placeholders and default credentials with your own secure passwords upon deployment.
-
 ---
 
 ## 🧠 The SOAR Logic (Hub & Spoke Model)
