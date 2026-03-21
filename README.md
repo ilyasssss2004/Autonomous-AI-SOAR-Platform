@@ -151,12 +151,13 @@ Each playbook was validated using real-world adversarial techniques from an exte
 
 ---
 
-## 🚀 How to Explore this Project
+## 📂 How to Explore this Project
 The infrastructure is organized into modular deployment directories:
 
 *   **/docker:** 
-    *   `/core-stack`: Contains the `docker-compose.yml` for **Wazuh** and **n8n**.
-    *   `/case-management`: Contains the standalone `docker-compose.yml` for **TheHive 5** and its dependencies (Cassandra/Elasticsearch).
+    *   `/wazuh`: Contains the SIEM stack and SSL certificate generator.
+    *   `/n8n`: Contains the standalone SOAR automation engine.
+    *   `/thehive`: Contains Case Management, Cassandra, and Elasticsearch.
 *   **/n8n:** Exported JSON workflow files for the Master Router and specialized playbooks.
 *   **/scripts:** Custom Python Active Response logic (`web-blocker.py`, `custom_block.py`).
 *   **/wazuh:** Custom XML detection rules and agent configuration snippets.
