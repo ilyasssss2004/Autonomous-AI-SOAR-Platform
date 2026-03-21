@@ -43,15 +43,20 @@ docker network create soc-net
 Navigate to each component directory and deploy the services. It is required to generate the Wazuh Indexer certificates before starting the SIEM.
 
 ```bash
-# 1. Generate SSL Certificates for Wazuh
-cd docker/core-stack && docker-compose -f generate-indexer-certs.yml run --rm generator
+# 1. Deploy the SIEM (Wazuh)
+cd docker/wazuh
+docker-compose -f generate-indexer-certs.yml run --rm generator
+docker-compose up -d
 
-# 2. Deploy the SIEM & SOAR (Wazuh & n8n)
+# 2. Deploy the SOAR Engine (n8n)
+cd ../n8n
 docker-compose up -d
 
 # 3. Deploy Case Management (TheHive)
-cd ../case-management && docker-compose up -d
+cd ../thehive
+docker-compose up -d
 ```
+
 ### 4. Accessing the Dashboards
 | Service | URL | Default Port |
 | :--- | :--- | :--- |
