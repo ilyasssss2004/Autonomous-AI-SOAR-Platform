@@ -1,0 +1,230 @@
+{
+  "name": "Playbook: Auth Defense & Credential Access",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Raw Wazuh Auth Alert:\n{{ JSON.stringify($node[\"Ingest Payload from Master Router\"].json.body) }}\n\nAbuseIPDB Threat Intel:\n{{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "=You are a Senior SOC Reporting Analyst. You will receive a combined JSON payload containing a raw Wazuh alert (SSH Brute Force/Authentication Failure) AND Threat Intelligence data from AbuseIPDB.\n\nWrite a highly professional, formal Executive Incident Report intended for the IT Director.\n\nCRITICAL RULES:\nDo NOT use any emojis, hashtags, or casual language.\nFormat your entire response in clean HTML using tags like <h2>, <p>, <ul>, <li>, and <b>."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [624, 128],
+      "id": "956ba4f3-9f2a-458a-9e66-09a55567aff8",
+      "name": "AI: Draft Exec Report"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [608, 320],
+      "id": "40a76487-04ae-466f-9c36-5b9a7a47b982",
+      "name": "Gemini LLM 2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "{{GEMINI_CRED_ID}}",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.abuseipdb.com/api/v2/check",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ipAddress",
+              "value": "={{ $json.body.data.srcip }}"
+            },
+            {
+              "name": "maxAgeInDays",
+              "value": "90"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Key",
+              "value": "{{ABUSEIPDB_API_KEY_PLACEHOLDER}}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [416, 0],
+      "id": "20239226-ae5b-4947-97f8-e0b58c4812b5",
+      "name": "Enrich IP: AbuseIPDB API"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Raw Wazuh Auth Alert:\n{{ JSON.stringify($node[\"Ingest Payload from Master Router\"].json.body) }}\n\nAbuseIPDB Threat Intel:\n{{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "=You are an elite Tier 3 SOC Analyst. A new Wazuh security alert has just triggered. Analyze the provided JSON alert data and the AbuseIPDB threat intelligence."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [608, -224],
+      "id": "f7c24b53-24c8-414b-9d45-5728effe4777",
+      "name": "AI: Draft Tactical Alert"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [592, -64],
+      "id": "05511aae-c506-43dd-ab21-a88e261903a7",
+      "name": "Gemini LLM 1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "{{GEMINI_CRED_ID}}",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst items = $input.all();\nconst validItems = [];\nconst now = Date.now();\nconst cooldown = 120000; \n\nfor (const item of items) {\n    const ip = item.json.body?.data?.srcip || \"unknown_ip\";\n    const lastSeen = staticData[ip] || 0;\n    if (now - lastSeen >= cooldown) {\n        staticData[ip] = now;\n        validItems.push(item);\n    }\n}\nreturn validItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [208, 0],
+      "id": "a58ce4d5-acab-4ffd-b3e9-59e0f09f661a",
+      "name": "Cache: Drop Duplicates"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "id": "eecafed8-9bb7-4d7c-a3d5-3ca522b41d3b",
+      "name": "Ingest Payload from Master Router"
+    },
+    {
+      "parameters": {
+        "resource": "case",
+        "operation": "create",
+        "title": "=🚨 SOC Incident: Brute-Force Activity Detected",
+        "description": "## Incident Overview\nAuto-generated summary from Wazuh and AbuseIPDB data.",
+        "startDate": "={{ $now }}",
+        "owner": "{{THEHIVE_USER_PLACEHOLDER}}",
+        "tags": "=auth, brute-force",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.theHive",
+      "typeVersion": 1,
+      "position": [1136, 0],
+      "id": "da42a73e-905b-49d5-b105-159ba6ffd8e3",
+      "name": "Generate TheHive Incident",
+      "credentials": {
+        "theHiveApi": {
+          "id": "{{THEHIVE_CRED_ID}}",
+          "name": "The Hive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "observable",
+        "operation": "create",
+        "caseId": "={{ $node[\"Generate TheHive Incident\"].json[\"id\"] }}",
+        "dataType": "ip",
+        "data": "={{ $('Ingest Payload from Master Router').item.json.body.data.srcip }}",
+        "message": "Brute-force attacker IP.",
+        "startDate": "={{ $now }}",
+        "status": "Ok",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.theHive",
+      "typeVersion": 1,
+      "position": [1328, 0],
+      "id": "25675e8e-9ecf-413c-913e-5e16cab71387",
+      "name": "Attach Attacker IP Observable",
+      "credentials": {
+        "theHiveApi": {
+          "id": "{{THEHIVE_CRED_ID}}",
+          "name": "The Hive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "{{SLACK_CHANNEL_ID}}",
+          "mode": "id"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [896, -224],
+      "id": "95f506ab-250a-43dd-9921-8210ea5a1cd1",
+      "name": "Dispatch Slack Alert",
+      "webhookId": "{{SLACK_WEBHOOK_ID}}",
+      "credentials": {
+        "slackApi": {
+          "id": "{{SLACK_CRED_ID}}",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "{{SENDER_EMAIL_PLACEHOLDER}}",
+        "toEmail": "{{RECIPIENT_EMAIL_PLACEHOLDER}}",
+        "subject": "URGENT: SSH Brute Force Attack Detected",
+        "html": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [928, 128],
+      "id": "24d02e86-6078-4fbc-b2bc-3116b52b6239",
+      "name": "Dispatch Executive Brief",
+      "webhookId": "{{EMAIL_WEBHOOK_ID}}",
+      "credentials": {
+        "smtp": {
+          "id": "{{SMTP_CRED_ID}}",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI: Draft Exec Report": { "main": [[{ "node": "Dispatch Executive Brief", "type": "main", "index": 0 }]] },
+    "Gemini LLM 2": { "ai_languageModel": [[{ "node": "AI: Draft Exec Report", "type": "ai_languageModel", "index": 0 }]] },
+    "Enrich IP: AbuseIPDB API": { "main": [[{ "node": "AI: Draft Tactical Alert", "type": "main", "index": 0 }, { "node": "AI: Draft Exec Report", "type": "main", "index": 0 }, { "node": "Generate TheHive Incident", "type": "main", "index": 0 }]] },
+    "AI: Draft Tactical Alert": { "main": [[{ "node": "Dispatch Slack Alert", "type": "main", "index": 0 }]] },
+    "Gemini LLM 1": { "ai_languageModel": [[{ "node": "AI: Draft Tactical Alert", "type": "ai_languageModel", "index": 0 }]] },
+    "Cache: Drop Duplicates": { "main": [[{ "node": "Enrich IP: AbuseIPDB API", "type": "main", "index": 0 }]] },
+    "Ingest Payload from Master Router": { "main": [[{ "node": "Cache: Drop Duplicates", "type": "main", "index": 0 }]] },
+    "Generate TheHive Incident": { "main": [[{ "node": "Attach Attacker IP Observable", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "id": "SHD3f2sGUbRFownd",
+  "tags": []
+}
