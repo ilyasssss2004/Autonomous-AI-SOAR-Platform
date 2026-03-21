@@ -63,21 +63,13 @@ To ensure full auditability and compliance, the SOAR pipeline automatically logs
 
 ![TheHive Dashboard](docs/thehive-dashboard.png)
 
-### Key Case Management Features:
+### 🛠️ Key Case Management Features:
 *   **Automated Case Creation:** n8n dynamically generates cases with standardized naming conventions (e.g., `SOC Incident: Malware Detected`).
 *   **Categorization & Tagging:** Alerts are automatically tagged by threat type (`brute-force`, `web`, `syscheck`, `malware`) and mapped to MITRE ATT&CK TTPs (e.g., `T1565.001`).
-*   **Observable Attachment:** Malicious IPs and file hashes are automatically attached to cases as "Observables," allowing for rapid pivoting during forensic analysis.
-*   **Severity Mapping:** Incident severity (Low to High) is calculated during the n8n enrichment phase and reflected instantly in the dashboard.
-
----
-
-### 🔍 Intelligent Triage: Incident vs Audit Logging
-To maintain a high signal-to-noise ratio, the pipeline differentiates between confirmed malicious activity and benign/unknown system changes. This is managed by an **Evaluation Logic Gate** ($ThreatScore > 0$) within the n8n Malware Defense sub-workflow:
-
-*   **SOC Incident (Alert):** Triggered when a file hash is identified as malicious by **VirusTotal**. This launches the full response chain: AI-contextualization, Slack alerts, Executive briefings, and high-severity Incident creation in TheHive.
-*   **SOC Audit (Log):** Triggered when a new file is detected but the hash is **unique or unknown** (Threat Score = 0) to intelligence sources.
-    *   **Silent Logging:** Instead of firing intrusive Slack or Email alerts, the system creates a specialized **Audit Case** in TheHive with `Low` severity.
-    *   **Forensic Trace:** This ensures every file modification is recorded for future threat hunting and compliance, without contributing to "Alert Fatigue."
+*   **Observable Attachment:** Malicious IPs and file hashes are attached as "Observables," allowing for rapid pivoting during forensic analysis.
+*   **Intelligent Triage (Incident vs. Audit):** To prevent alert fatigue, the pipeline uses a Logic Gate ($ThreatScore > 0$) to differentiate the logging path:
+    *   **SOC Incident (High/Medium Severity):** Triggered by confirmed malicious hashes. Launches the full AI-reporting and multi-channel alerting chain.
+    *   **SOC Audit (Low Severity):** Triggered when a hash is **unique or unknown**. The system creates a "Silent" Audit Case for forensic record-keeping without firing intrusive Slack/Email alerts.
 
 ![Malware Triage Logic](docs/malware-playbook-logic.png)
 
