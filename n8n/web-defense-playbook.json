@@ -1,0 +1,220 @@
+{
+  "name": "Playbook: Web Application Defense",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.abuseipdb.com/api/v2/check",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "ipAddress",
+              "value": "={{ $json.body.data.srcip }}"
+            },
+            {
+              "name": "maxAgeInDays",
+              "value": "90"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Key",
+              "value": "{{ABUSEIPDB_API_KEY_PLACEHOLDER}}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-224, 0],
+      "id": "6a5ca8b0-dd2f-4ba6-b8d2-925ee1b8b95d",
+      "name": "Enrich IP: AbuseIPDB API"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Raw Wazuh Attack Data:\n{{ JSON.stringify($('Ingest Payload from Master Router').item.json.body) }}\n\nAbuseIPDB Threat Intelligence:\n{{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "You are an elite SOC Web Defense Analyst. Analyze the Wazuh Apache/ModSecurity alert and AbuseIPDB threat intelligence."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [-80, -240],
+      "id": "1c70ba17-9202-4238-b804-e467f681bb39",
+      "name": "AI: Draft Tactical Alert"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Raw Wazuh Attack Data:\n{{ JSON.stringify($('Ingest Payload from Master Router').item.json.body) }}\n\nAbuseIPDB Threat Intelligence:\n{{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "You are a Senior SOC Reporting Analyst. Draft a formal Executive Incident Report for the IT Director."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [-32, 208],
+      "id": "d35263f2-3313-4882-8e8b-529358347917",
+      "name": "AI: Draft Exec Report"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [-64, -64],
+      "id": "3e4a36d5-dff3-49ae-8900-fd6033cdcc3c",
+      "name": "Gemini LLM 1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "{{GEMINI_CRED_ID}}",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [-128, 336],
+      "id": "5a510d83-9bbf-4695-888f-f582c2d23309",
+      "name": "Gemini LLM 2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "{{GEMINI_CRED_ID}}",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-448, 0],
+      "id": "6b5d018c-8273-4d69-933a-46af171f5435",
+      "name": "Ingest Payload from Master Router"
+    },
+    {
+      "parameters": {
+        "resource": "case",
+        "operation": "create",
+        "title": "=🚨 SOC Incident: Web Attack Activity",
+        "description": "## Incident Overview\nWeb application attack detected via Wazuh/ModSecurity and enriched with AbuseIPDB.",
+        "severity": 3,
+        "startDate": "={{ $now }}",
+        "owner": "{{THEHIVE_USER_PLACEHOLDER}}",
+        "tags": "=web, waf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.theHive",
+      "typeVersion": 1,
+      "position": [368, 0],
+      "id": "0a78bdfc-6176-483c-9a72-28c9658cf9eb",
+      "name": "Generate TheHive Incident",
+      "credentials": {
+        "theHiveApi": {
+          "id": "{{THEHIVE_CRED_ID}}",
+          "name": "The Hive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "observable",
+        "operation": "create",
+        "caseId": "={{ $node[\"Generate TheHive Incident\"].json[\"id\"] }}",
+        "dataType": "ip",
+        "data": "={{ $('Ingest Payload from Master Router').item.json.body.data.srcip }}",
+        "message": "Attacker IP identified by ModSecurity.",
+        "startDate": "={{ $now }}",
+        "status": "Ok",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.theHive",
+      "typeVersion": 1,
+      "position": [576, 0],
+      "id": "acac8bb5-9b97-48c8-a186-79e0f39c7331",
+      "name": "Attach Attacker IP Observable",
+      "credentials": {
+        "theHiveApi": {
+          "id": "{{THEHIVE_CRED_ID}}",
+          "name": "The Hive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "{{SLACK_CHANNEL_ID}}",
+          "mode": "id"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [256, -240],
+      "id": "8cbd5217-d325-4776-b484-05e8c24387d7",
+      "name": "Dispatch Slack Alert",
+      "webhookId": "{{SLACK_WEBHOOK_ID}}",
+      "credentials": {
+        "slackApi": {
+          "id": "{{SLACK_CRED_ID}}",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "{{SENDER_EMAIL_PLACEHOLDER}}",
+        "toEmail": "{{RECIPIENT_EMAIL_PLACEHOLDER}}",
+        "subject": "URGENT: Web Application Attack Detected by Wazuh",
+        "html": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [288, 208],
+      "id": "9b196931-04a8-40 d7-987a-1c05293285a0",
+      "name": "Dispatch Executive Brief",
+      "webhookId": "{{EMAIL_WEBHOOK_ID}}",
+      "credentials": {
+        "smtp": {
+          "id": "{{SMTP_CRED_ID}}",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Enrich IP: AbuseIPDB API": { "main": [[{ "node": "Generate TheHive Incident", "type": "main", "index": 0 }, { "node": "AI: Draft Tactical Alert", "type": "main", "index": 0 }, { "node": "AI: Draft Exec Report", "type": "main", "index": 0 }]] },
+    "AI: Draft Tactical Alert": { "main": [[{ "node": "Dispatch Slack Alert", "type": "main", "index": 0 }]] },
+    "AI: Draft Exec Report": { "main": [[{ "node": "Dispatch Executive Brief", "type": "main", "index": 0 }]] },
+    "Gemini LLM 1": { "ai_languageModel": [[{ "node": "AI: Draft Tactical Alert", "type": "ai_languageModel", "index": 0 }]] },
+    "Gemini LLM 2": { "ai_languageModel": [[{ "node": "AI: Draft Exec Report", "type": "ai_languageModel", "index": 0 }]] },
+    "Ingest Payload from Master Router": { "main": [[{ "node": "Enrich IP: AbuseIPDB API", "type": "main", "index": 0 }]] },
+    "Generate TheHive Incident": { "main": [[{ "node": "Attach Attacker IP Observable", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "id": "lkYrDAdrivpyVYU0",
+  "tags": []
+}
