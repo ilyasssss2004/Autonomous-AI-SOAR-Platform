@@ -2,7 +2,8 @@
 
 ### *End-to-End Threat Detection, AI-Contextualization, and Active Response*
 
-![Project Architecture](docs/architecture-diagram.png)
+<img width="1130" height="639" alt="soc-automation-architecture" src="https://github.com/user-attachments/assets/02bd3cb4-6f63-4a2e-a8a1-b83ae6f4b404" />
+
 
 ## 📌 Project Overview
 This repository hosts a fully containerized, autonomous Security Operations Center (SOC) pipeline. It bridges the gap between raw telemetry and intelligent response by integrating **Wazuh (SIEM)**, **n8n (SOAR)**, and **Google Gemini (LLM)**.
@@ -40,7 +41,12 @@ Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert ba
 <img width="1847" height="793" alt="image" src="https://github.com/user-attachments/assets/8a2eaa31-8121-4898-afa5-c813d57b6904" />
 
 *   **File Integrity & Malware Defense:** Monitors critical directories (`/var/www/html`, `/etc`). Uses a conditional logic gate ($ThreatScore > 0$) to trigger VirusTotal API lookups.
+
+<img width="1852" height="800" alt="image" src="https://github.com/user-attachments/assets/92155bcc-1cb7-4d82-aaed-1ef3825dfef4" />
+
 *   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts.
+
+<img width="1850" height="799" alt="image" src="https://github.com/user-attachments/assets/5e7368bd-c7df-40ce-9342-ca39fce00fae" />
 
 ---
 
@@ -99,14 +105,11 @@ I executed a range of adversarial techniques—both from external nodes (Kali) a
     `hydra -l ubuntu-victim -P /usr/share/wordlists/rockyou.txt ssh://192.168.68.113`
 *   **🛡️ Response:** Wazuh `Rule 100050` detects 4+ failures within 120s. n8n triggers the **Auth Defense Playbook**, executing a permanent UFW block via `custom_block.py` and alerting the SOC via Slack.
 
-### 2. Web Application Defense (Target: DVWA + ModSecurity)
-*   **SQL Injection (SQLi):**
+### 2. Web Application Defense (Apache + ModSecurity)
+*   **External Attack:** SQL Injection (SQLi) payload delivery.
     `curl "http://192.168.68.113/?id=1'+UNION+SELECT+username,password+FROM+users--"`
-*   **Cross-Site Scripting (XSS):**
-    `curl "http://192.168.68.113/dvwa/vulnerabilities/xss_r/?name=<script>alert('SOC_TEST')</script>"`
-*   **Local File Inclusion (LFI):**
-    `curl "http://192.168.68.113/dvwa/vulnerabilities/fi/?page=../../../../../../etc/passwd"`
-*   **🛡️ Response:** ModSecurity WAF blocks the request (403/406). Wazuh detects the WAF alert; n8n triggers the **Web Defense Playbook**, executing a **Progressive IP Block** (60s -> 300s -> 3600s).
+*   **🛡️ Response:** ModSecurity identifies the critical anomaly (Score 23). Wazuh generates a high-severity alert. n8n triggers the **Web Defense Playbook**, executing the `web-blocker.py` script.
+*   **Active Defense:** The attacker's IP is dynamically added to the `UFW` (Uncomplicated Firewall) drop list, effectively "killing" the session before the injection reaches the database logic.
 
 ### 3. File Integrity & Malware Defense (MITRE T1565)
 *   **Malicious Ingress (External Download):** 
