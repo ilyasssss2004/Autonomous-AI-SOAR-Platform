@@ -13,16 +13,16 @@ The platform doesn't just detect threats; it triages them using real-time threat
 ---
 
 ## 🏗️ Technical Architecture
-The entire core stack is deployed via **Docker**, ensuring high availability and modularity.
+The entire core stack is deployed via **Docker**, ensuring high availability and modularity across the defensive pipeline.
 
-*   **SIEM:** Wazuh (Manager & Indexer)
-*   **SOAR Orchestrator:** n8n (Self-hosted)
-*   **Case Management:** TheHive 5
+*   **SIEM:** **Wazuh (Manager & Indexer)** — Centralized log analysis, security monitoring, and endpoint telemetry.
+*   **SOAR Orchestrator:** **n8n (Self-hosted)** — The "Brain" of the operation; a modular workflow engine for automated incident response.
+*   **Case Management:** **TheHive 5** — A centralized dashboard for incident tracking, forensic analysis, and audit compliance.
 *   **Target Node (Ubuntu 24.04):** 
-    *   **Web Stack:** Apache2 Server hosting **DVWA** (Damn Vulnerable Web Application).
-    *   **WAF:** **ModSecurity 3.0** with OWASP Core Rule Set (CRS) for real-time traffic filtering.
-    *   **Telemetry:** Hardened with `auditd` and Wazuh Agent.
-*   **Attack Node:** Kali Linux (Attack Emulation)
+    *   **Web Stack:** Apache2 HTTP Server protected by **ModSecurity 3.0**.
+    *   **WAF Integration:** Configured with the **OWASP Core Rule Set (CRS)** to detect and block SQL Injection (SQLi) and other OWASP Top 10 threats in real-time.
+    *   **Telemetry:** Hardened with `auditd` (System Auditing) and the **Wazuh Agent** for File Integrity Monitoring (FIM) and log shipping.
+*   **Attack Node:** **Kali Linux** — Dedicated environment for generating adversarial telemetry and testing playbook triggers.
 
 ---
 
@@ -32,23 +32,18 @@ The automation engine is built on a **1+3 Modular Workflow** design in n8n, opti
 ### 1. Master Alert Dispatcher
 Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert based on the `rule.id` or `group`, and dispatches the payload to the correct specialized Playbook.
 
-
 <img width="1850" height="766" alt="image" src="https://github.com/user-attachments/assets/9b416242-72c7-4622-ae7b-4597376caaed" />
-
 
 ### 2. Specialized Playbooks
 *   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110). Includes a caching node to "Drop Duplicates" and enriches IP reputation via AbuseIPDB.
-
 
 <img width="1847" height="793" alt="image" src="https://github.com/user-attachments/assets/8a2eaa31-8121-4898-afa5-c813d57b6904" />
 
 *   **File Integrity & Malware Defense:** Monitors critical directories (`/var/www/html`, `/etc`). Uses a conditional logic gate ($ThreatScore > 0$) to trigger VirusTotal API lookups.
 
-
 <img width="1852" height="800" alt="image" src="https://github.com/user-attachments/assets/92155bcc-1cb7-4d82-aaed-1ef3825dfef4" />
 
-*   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts.
-
+*   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts
 
 <img width="1850" height="799" alt="image" src="https://github.com/user-attachments/assets/5e7368bd-c7df-40ce-9342-ca39fce00fae" />
 
@@ -68,19 +63,24 @@ I developed specialized Python scripts to move the platform from "Passive Monito
 
 ---
 
-## 🤖 AI Contextualization: Google Gemini
-This platform solves the "Context Gap" by using two distinct LLM prompts to translate technical data for different stakeholders:
-
-*   **Tactical Alert (Slack):** Provides the SOC analyst with the exact MITRE ATT&CK technique, enriched IoC data, and recommended next steps.
-*   **Executive Brief (Email):** Automatically translates technical telemetry into a high-level business impact summary for management.
-  
 ---
 
-## 📢 Multi-Channel Alerting & Reporting
-The platform ensures that the right information reaches the right person at the right time through high-fidelity, AI-enhanced notifications.
+## 🤖 AI-Powered Contextualization & Alerting
+This platform solves the "Context Gap" by using **Google Gemini** to translate raw technical JSON telemetry into actionable intelligence for different stakeholders. 
 
-*   **Tactical Alerts:** Dispatched to a Slack channel. Includes the Source IP, Geo-Location, Threat Score, and Gemini-generated "Next Steps" for immediate triage.
-*   **Executive Briefs:** Sent via SMTP. Translates raw logs into a risk-based summary, allowing management to understand the business impact without reading technical JSON payloads.
+### 🕵️ Tactical Alert (Slack)
+**Audience:** SOC Analysts / Incident Responders  
+**Content:** MITRE ATT&CK Mapping, Enriched IoCs (VirusTotal/AbuseIPDB), and "Next Step" commands for immediate triage.
+
+<img width="1919" height="859" alt="image" src="https://github.com/user-attachments/assets/2097079a-d0a6-429e-a49b-4eb3e1511ae7" />
+
+---
+
+### 📈 Executive Brief (Email)
+**Audience:** CISOs / Management  
+**Content:** Risk-based business impact summary, plain-English incident description, and resolution status.
+
+<img width="1919" height="891" alt="image" src="https://github.com/user-attachments/assets/a7cbd280-1947-4734-961e-fc2630427280" />
 
 ---
 
