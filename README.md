@@ -282,10 +282,6 @@ echo "This is a normal configuration file for my website." > /tmp/normal_file.tx
 
 ---
 
-> **Note:** All API keys and public-facing IPs have been replaced with `{{PLACEHOLDERS}}`.
-
----
-
 ### Connect
 
 - **LinkedIn:** https://www.linkedin.com/in/ilyas-wadgattait-96551624b
