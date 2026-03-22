@@ -107,7 +107,7 @@ Acts as the central router. It ingests Wazuh JSON webhooks, triages each alert b
 
 Handles SSH Brute Force (T1110), enriches IP reputation via AbuseIPDB, utilizes Google Gemini to draft context-rich Slack and Email alerts, and auto-provisions a tracking case in TheHive.
 
-**Engineering Note — Alert Fatigue Reduction:** To prevent notification spam and API rate-limiting during high-volume attacks, a custom JavaScript node was engineered to track offending IPs in n8n's static workflow memory, enforcing a strict 2-minute cooldown window before allowing a duplicate alert to proceed to the AI engine and SOC dashboards.
+**Alert Fatigue Reduction:** To prevent notification spam and API rate-limiting during high-volume attacks, a custom JavaScript node was engineered to track offending IPs in n8n's static workflow memory, enforcing a strict 2-minute cooldown window before allowing a duplicate alert to proceed to the AI engine and SOC dashboards.
 
 <details>
   <summary><b>Click to view the Custom JS Rate-Limiting Logic</b></summary>
@@ -146,7 +146,7 @@ return validItems;
 
 Real-time FIM across critical system paths (`/var/www/html`, `/etc/apache2`, `/etc/modsecurity`, `/tmp`).
 
-**Engineering Note — Automated Malware Triage:** To eliminate manual hash lookups, this playbook extracts SHA256 file hashes directly from Wazuh `syscheck` payload alerts and queries the VirusTotal API. A dynamic logic gate based on the `$ThreatScore` then routes the alert: benign modifications (Score = 0) are silently logged as audit cases in TheHive, while confirmed malicious files (Score > 0) are immediately passed to the AI engine to generate actionable threat reports — broadcast to analysts via Slack and to management via Email — and trigger a High-Severity incident in TheHive with the hash attached as an IoC observable.
+**Automated Malware Triage:** To eliminate manual hash lookups, this playbook extracts SHA256 file hashes directly from Wazuh `syscheck` payload alerts and queries the VirusTotal API. A dynamic logic gate based on the `$ThreatScore` then routes the alert: benign modifications (Score = 0) are silently logged as audit cases in TheHive, while confirmed malicious files (Score > 0) are immediately passed to the AI engine to generate actionable threat reports — broadcast to analysts via Slack and to management via Email — and trigger a High-Severity incident in TheHive with the hash attached as an IoC observable.
 
 <img width="1852" height="800" alt="Malware Defense Workflow" src="https://github.com/user-attachments/assets/2c9b6224-b6c3-4b01-96cd-db18b904d129" />
 
@@ -156,7 +156,7 @@ Real-time FIM across critical system paths (`/var/www/html`, `/etc/apache2`, `/e
 
 Triages Apache/ModSecurity WAF logs to identify and mitigate OWASP Top 10 attacks including SQL Injection and Directory Traversal.
 
-**Engineering Note — Dual-Stream AI Contextualization:** WAF logs are notoriously dense and prone to alert fatigue. This playbook solves the readability problem by enriching the attacker's IP via AbuseIPDB, then routing the payload through two parallel AI nodes simultaneously — translating the raw HTTP attack vector into a technical Slack alert for SOC analysts and a business-risk Email for executives. A centralized case is automatically created in TheHive with the enriched IP attached as a forensic observable.
+**Dual-Stream AI Contextualization:** WAF logs are notoriously dense and prone to alert fatigue. This playbook solves the readability problem by enriching the attacker's IP via AbuseIPDB, then routing the payload through two parallel AI nodes simultaneously — translating the raw HTTP attack vector into a technical Slack alert for SOC analysts and a business-risk Email for executives. A centralized case is automatically created in TheHive with the enriched IP attached as a forensic observable.
 
 <img width="1850" height="799" alt="Web Defense Workflow" src="https://github.com/user-attachments/assets/5ff80443-1fdf-4302-82ae-92e640ae8fdc" />
 
