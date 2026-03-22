@@ -185,7 +185,7 @@ hydra -l victim_user -P /path/to/wordlist.txt ssh://192.168.1.X
 *   **Attack:** SQL Injection (SQLi) payload delivery.
 
 ```bash
-curl "[http://192.168.1.](http://192.168.1.)X/?id=1'+UNION+SELECT+username,password+FROM+users--"
+curl "http://192.168.1.X/?id=1'+UNION+SELECT+username,password+FROM+users--"
 ```
 
 *   **🛡️ Response:** ModSecurity (WAF) identifies the anomaly (Score 23+). n8n triggers the **Web Defense Playbook** to block the attacker IP.
