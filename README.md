@@ -107,7 +107,8 @@ Handles SSH Brute Force (T1110), enriches IP reputation via AbuseIPDB, utilizes 
 **Engineering Note — Alert Fatigue Reduction:** To prevent notification spam and API rate-limiting during high-volume attacks, a custom JavaScript node was engineered to track offending IPs in n8n's static workflow memory, enforcing a strict 2-minute cooldown window before allowing a duplicate alert to proceed to the AI engine and SOC dashboards.
 
 <details>
-<summary><b>Click to view the Custom JS Rate-Limiting Logic</b></summary>
+  <summary><b>Click to view the Custom JS Rate-Limiting Logic</b></summary>
+
 ```javascript
 const staticData = $getWorkflowStaticData('global');
 const items = $input.all();
@@ -129,12 +130,12 @@ for (const item of items) {
 }
 
 // Return only net-new alerts, dropping the spam
-return validItems; ```
+return validItems;
+```
 
 </details>
 
 <img width="1847" height="793" alt="Auth Defense Workflow" src="https://github.com/user-attachments/assets/5d06e34f-8a8c-4316-ab34-809525f1c54a" />
-
 ---
 **File Integrity & Malware Defense**
 
