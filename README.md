@@ -51,7 +51,7 @@ The following components and versions were used to build and validate this platf
 | :--- | :--- | :--- |
 | Ubuntu Server (Defensive Core) | 22.04 LTS | Hosts Wazuh, n8n, TheHive |
 | Ubuntu Server (Target Node) | 24.04 LTS | Victim endpoint with Wazuh Agent |
-| Kali Linux (Attack Node) | Rolling | Adversarial emulation |
+| Kali Linux (Attack Node) | 2025.2 | Adversarial emulation |
 | Wazuh Manager + Indexer + Dashboard | 4.12.0 | SIEM & FIM engine |
 | n8n (Self-hosted via Docker) | Latest | SOAR orchestration |
 | TheHive | 4.1.24 | Case & incident management |
