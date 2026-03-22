@@ -172,7 +172,6 @@ Each playbook was validated using real-world adversarial techniques from an exte
 
 ### 1. Auth Defense (MITRE T1110)
 *   **Attack:** SSH Brute Force using Hydra.
-
 ```bash
 hydra -l victim_user -P /path/to/wordlist.txt ssh://192.168.1.X
 ```
@@ -183,7 +182,6 @@ hydra -l victim_user -P /path/to/wordlist.txt ssh://192.168.1.X
 
 ### 2. Web Application Defense (OWASP Top 10)
 *   **Attack:** SQL Injection (SQLi) payload delivery.
-
 ```bash
 curl "http://192.168.1.X/?id=1'+UNION+SELECT+username,password+FROM+users--"
 ```
@@ -194,12 +192,25 @@ curl "http://192.168.1.X/?id=1'+UNION+SELECT+username,password+FROM+users--"
 
 ### 3. File Integrity & Malware Defense (MITRE T1565)
 *   **Attack:** Remote Payload Push via SSH.
-
 ```bash
 echo 'EICAR-ANTIVIRUS-TEST-STRING' | ssh 192.168.1.X "cat > /tmp/eicar.com"
 ```
 
 *   **🛡️ Response:** Wazuh `syscheck` detects the file modification. n8n performs a VirusTotal hash lookup. EICAR strings return a high threat score, triggering a high-priority incident in TheHive.
+
+---
+
+### 4. Threat Intelligence & Triage Defense (MITRE T1105)
+*   **Attack:** Simulated file drop on the compromised Ubuntu victim — one known malicious sample and one benign file — to validate the full VirusTotal triage and SOAR routing logic.
+```bash
+cd /tmp
+wget -O eicar_test_sample.com https://secure.eicar.org/eicar.com.txt
+echo "This is a normal configuration file for my website." > /tmp/normal_file.txt
+```
+
+*   **🛡️ Response:** Wazuh `syscheck` detects both file creation events and extracts their hashes. n8n submits each hash to VirusTotal:
+    *   **`eicar_test_sample.com` (VT Score > 0 / known malicious):** Triggers an immediate **high-priority alert** routed to both **Slack** and **Email**, and an incident is automatically created in **TheHive**.
+    *   **`normal_file.txt` (VT Score = 0 / unique or unknown hash):** Flagged as an **audit case** in **TheHive** for analyst review, ensuring unknown files are never silently dropped.
 
 ---
 
