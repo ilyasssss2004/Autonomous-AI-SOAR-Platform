@@ -51,14 +51,16 @@ The following components and versions were used to build and validate this platf
 | :--- | :--- | :--- |
 | Ubuntu Server (Defensive Core) | 22.04 LTS | Hosts Wazuh, n8n, TheHive |
 | Ubuntu Server (Target Node) | 24.04 LTS | Victim endpoint with Wazuh Agent |
-| Kali Linux (Attack Node) | 2024.x | Adversarial emulation |
-| Wazuh Manager + Indexer | 4.x | SIEM & FIM engine |
-| n8n (Self-hosted) | Latest | SOAR orchestration |
-| TheHive | 5.x | Case & incident management |
-| Apache2 | 2.4.x | Web server on target node |
+| Kali Linux (Attack Node) | Latest | Adversarial emulation |
+| Wazuh Manager + Indexer + Dashboard | 4.12.0 | SIEM & FIM engine |
+| n8n (Self-hosted via Docker) | Latest | SOAR orchestration |
+| TheHive | 4.1.24 | Case & incident management |
+| Cassandra | 4 | TheHive backend database |
+| Elasticsearch | 7.17.9 | TheHive search & indexing |
+| Apache2 | 2.4.58 | Web server on target node |
 | ModSecurity | 3.0 | Web Application Firewall |
 | OWASP Core Rule Set (CRS) | 3.3.x | WAF ruleset |
-| Python | 3.x | Active Response scripts |
+| Python | 3.12.3 | Active Response scripts |
 
 **External API Keys Required:**
 - **VirusTotal API** — File hash threat intelligence
@@ -127,7 +129,8 @@ for (const item of items) {
 }
 
 // Return only net-new alerts, dropping the spam
-return validItems;```
+return validItems;
+```
 
 </details>
 
