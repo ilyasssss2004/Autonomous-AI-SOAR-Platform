@@ -59,8 +59,9 @@ Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert ba
 <img width="1850" height="766" alt="Master Alert Router Logic" src="https://github.com/user-attachments/assets/9b416242-72c7-4622-ae7b-4597376caaed" />
 
 ### 2. Specialized Playbooks
-*   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110) and enriches IP reputation via AbuseIPDB. 
-    *   **🧠 Engineering Highlight (Alert Fatigue Reduction):** To prevent notification spam and API rate-limiting, I engineered a custom JavaScript "Drop Duplicates" node. It leverages n8n's static workflow data to track offending IPs in memory, enforcing a strict 2-minute cooldown window before allowing a duplicate alert to proceed to the SOC.
+
+*   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110), enriches IP reputation via AbuseIPDB, utilizes **Google Gemini LLM** to draft and dispatch context-rich Slack and Email alerts, and auto-provisions a tracking case in TheHive.
+    *   **🧠 Engineering Highlight (Alert Fatigue Reduction):** To prevent notification spam and API rate-limiting during high-volume attacks, I engineered a custom JavaScript "Drop Duplicates" node. It leverages n8n's static workflow data to track offending IPs in memory, enforcing a strict 2-minute cooldown window before allowing a duplicate alert to proceed to the AI engine and SOC dashboards.
 
     <details>
     <summary><b>💻 Click to view the Custom JS Rate-Limiting Logic</b></summary>
@@ -92,14 +93,15 @@ Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert ba
 
     <img width="1847" height="793" alt="Auth Defense Workflow" src="https://github.com/user-attachments/assets/5d06e34f-8a8c-4316-ab34-809525f1c54a" />
 
-*   **File Integrity & Malware Defense:** Monitors critical directories (`/var/www/html`, `/etc`). Uses a conditional logic gate ($ThreatScore > 0$) to trigger VirusTotal API lookups.
+*   **File Integrity & Malware Defense:** Real-time FIM (File Integrity Monitoring) across critical system paths (`/var/www/html`, `/etc/apache2`, `/etc/modsecurity`, `/tmp`).
+    *   **🧠 Engineering Highlight (Automated Malware Triage):** To eliminate manual hash lookups, this playbook extracts file hashes (SHA256) directly from Wazuh `syscheck` payload alerts and queries the **VirusTotal API**. It utilizes a dynamic logic gate based on the engine's `$ThreatScore`. Benign modifications (Score = 0) are silently logged as audit cases in TheHive. Confirmed malicious files (Score > 0) are immediately passed to the AI to generate actionable threat reports—broadcasted directly to analysts via Slack and management via Email—and trigger a High-Severity incident in TheHive with the hash attached as an IoC observable.
 
     <img width="1852" height="800" alt="Malware Defense Workflow" src="https://github.com/user-attachments/assets/2c9b6224-b6c3-4b01-96cd-db18b904d129" />
-
-*   **Web Application Defense:** Triages Apache/ModSecurity logs to identify and block directory traversal and SQLi attempts.
+    
+*   **Web Application Defense:** Triages Apache/ModSecurity WAF logs to identify and mitigate OWASP Top 10 attacks (e.g., SQL Injection, Directory Traversal).
+    *   **🧠 Engineering Highlight (Dual-Stream AI Contextualization):** WAF logs are notoriously dense and prone to alert fatigue. This playbook solves the "readability problem" by immediately enriching the attacker's IP via AbuseIPDB. The payload is then routed through parallel AI nodes, simultaneously translating the raw HTTP attack vector into a technical Slack alert for SOC analysts and a business-risk Email for executives. Finally, it automatically creates a centralized case in TheHive, attaching the enriched IP as a forensic observable.
 
     <img width="1850" height="799" alt="Web Defense Workflow" src="https://github.com/user-attachments/assets/5ff80443-1fdf-4302-82ae-92e640ae8fdc" />
-
 ---
 
 ## 🐍 Custom Active Response (Python)
