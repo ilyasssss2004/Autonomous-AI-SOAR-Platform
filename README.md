@@ -43,6 +43,34 @@ The platform is distributed across three primary logical nodes, simulating a rea
 
 ---
 
+## Prerequisites & Stack Versions
+
+The following components and versions were used to build and validate this platform. Deviating significantly from these versions may require configuration adjustments.
+
+| Component | Version | Role |
+| :--- | :--- | :--- |
+| Ubuntu Server (Defensive Core) | 22.04 LTS | Hosts Wazuh, n8n, TheHive |
+| Ubuntu Server (Target Node) | 24.04 LTS | Victim endpoint with Wazuh Agent |
+| Kali Linux (Attack Node) | 2024.x | Adversarial emulation |
+| Wazuh Manager + Indexer | 4.x | SIEM & FIM engine |
+| n8n (Self-hosted) | Latest | SOAR orchestration |
+| TheHive | 5.x | Case & incident management |
+| Apache2 | 2.4.x | Web server on target node |
+| ModSecurity | 3.0 | Web Application Firewall |
+| OWASP Core Rule Set (CRS) | 3.3.x | WAF ruleset |
+| Python | 3.x | Active Response scripts |
+
+**External API Keys Required:**
+- **VirusTotal API** — File hash threat intelligence
+- **AbuseIPDB API** — IP reputation enrichment
+- **Google Gemini API** — AI-powered alert contextualization
+- **Slack Webhook** — Tactical SOC alert delivery
+- **SMTP Credentials** — Executive email reporting
+
+> All API keys and public-facing IPs in this repository have been replaced with `{{PLACEHOLDERS}}`. Populate your own credentials before deployment.
+
+---
+
 ## Endpoint Visibility & SIEM (Wazuh)
 
 Before automation can occur, high-fidelity telemetry is required. The Wazuh Manager acts as the central ingestion point, providing real-time visibility into the target environment.
