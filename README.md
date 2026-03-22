@@ -129,8 +129,7 @@ for (const item of items) {
 }
 
 // Return only net-new alerts, dropping the spam
-return validItems;
-```
+return validItems;```
 
 </details>
 
