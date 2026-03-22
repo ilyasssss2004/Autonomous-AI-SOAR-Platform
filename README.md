@@ -77,9 +77,9 @@ The following components and versions were used to build and validate this platf
 
 Before automation can occur, high-fidelity telemetry is required. The Wazuh Manager acts as the central ingestion point, providing real-time visibility into the target environment.
 
-<img width="1853" height="804" alt="image" src="https://github.com/user-attachments/assets/fa17add6-1658-44b8-95ca-9f0a720b579a" />
+<img width="1853" height="804" alt="wazuh-dashboard" src="https://github.com/user-attachments/assets/fa17add6-1658-44b8-95ca-9f0a720b579a" />
 
-<img width="1848" height="800" alt="image" src="https://github.com/user-attachments/assets/fea418ff-4e87-4cc3-92d0-52eee2f3a687" />
+<img width="1848" height="800" alt="wazuh-dashboard" src="https://github.com/user-attachments/assets/fea418ff-4e87-4cc3-92d0-52eee2f3a687" />
 
 
 **Key Telemetry Capabilities:**
