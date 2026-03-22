@@ -119,11 +119,16 @@ I developed specialized Python scripts to move the platform from "Passive Monito
 ---
 
 ## 🤖 AI-Powered Contextualization & Alerting
-This platform solves the "Context Gap" by using **Google Gemini** to translate raw technical JSON telemetry into actionable intelligence for different stakeholders. 
+This platform solves the "Context Gap" by using **Google Gemini** to translate raw, hard-to-read JSON telemetry into actionable intelligence. To ensure the right people get the right information, the pipeline utilizes a dual-prompting strategy, spinning up two parallel LLM instances per playbook tailored for different audiences.
 
 ### 🕵️ Tactical Alert (Slack)
 **Audience:** SOC Analysts / Incident Responders  
-**Content:** MITRE ATT&CK Mapping, Enriched IoCs (VirusTotal/AbuseIPDB), and "Next Step" commands for immediate triage.
+**Content:** MITRE ATT&CK Mapping, Enriched IoCs (VirusTotal/AbuseIPDB), and Threat Intent.
+
+**🛠️ Implementation Highlights:**
+*   **Targeted Channel Routing:** Alerts are not dumped into a single noisy channel. The pipeline routes messages dynamically to specialized operational channels (`#soc-auth-alerts`, `#soc-malware-alerts`, and `#soc-web-alerts`) using a custom **Wazuh Bot** webhook integration.
+*   **Resilient API Delivery:** Inside the n8n Slack node, routing is hardcoded via **Channel IDs** (e.g., `C0AL634F4HX`) rather than display names. This ensures the automation doesn't break if a team member renames a channel.
+*   **UX-Optimized Prompting:** The Gemini prompt is strictly instructed to output in heavy Markdown, utilizing strategic emojis (🚨, 🕵️) and bulleted lists. This creates highly scannable alerts, reducing cognitive load for analysts during high-stress incident triage.
 
 <img width="1919" height="859" alt="Slack Tactical Alert" src="https://github.com/user-attachments/assets/2097079a-d0a6-429e-a49b-4eb3e1511ae7" />
 
@@ -131,10 +136,14 @@ This platform solves the "Context Gap" by using **Google Gemini** to translate r
 
 ### 📈 Executive Brief (Email)
 **Audience:** CISOs / Management  
-**Content:** Risk-based business impact summary, plain-English incident description, and resolution status.
+**Content:** Risk-based business impact summary, plain-English incident description, and automated resolution status.
+
+**🛠️ Implementation Highlights:**
+*   **Audience-Specific Engineering:** The LLM prompt for the email node is vastly different from the Slack node. It is instructed to strip away all raw JSON, CLI commands, and overly technical jargon, focusing exclusively on business risk and mitigation confirmation.
+*   **Native SMTP Integration:** Dispatched directly to management inboxes via n8n's native SMTP node. 
+*   **Dynamic HTML Injection:** The n8n node is configured to parse Gemini's output and inject it as formatted HTML (`{{ $json.output }}`). This ensures the email arrives with clean formatting, headers, and emphasis, rather than a raw wall of text.
 
 <img width="1919" height="891" alt="Executive Email Report" src="https://github.com/user-attachments/assets/a7cbd280-1947-4734-961e-fc2630427280" />
-
 ---
 
 ## 📂 Incident Case Management: TheHive 5
