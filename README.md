@@ -24,7 +24,7 @@ The platform is distributed across three primary logical nodes, simulating a rea
 - **Case Management:** TheHive 5 — Centralized dashboard for incident tracking, forensic analysis, and audit compliance.
 
 **2. Target Node (Ubuntu 24.04 Victim)**
-- **Web Stack:** Apache2 HTTP Server protected by **ModSecurity 3.0**.
+- **Web Stack:** Apache2 HTTP Server protected by **ModSecurity 2.9.7**.
 - **WAF Integration:** Configured with the **OWASP Core Rule Set (CRS)** to detect and block SQL Injection (SQLi) and other OWASP Top 10 threats in real-time.
 - **Telemetry:** Hardened with `auditd` and the **Wazuh Agent** for File Integrity Monitoring (FIM) and log shipping.
 
@@ -51,15 +51,15 @@ The following components and versions were used to build and validate this platf
 | :--- | :--- | :--- |
 | Ubuntu Server (Defensive Core) | 22.04 LTS | Hosts Wazuh, n8n, TheHive |
 | Ubuntu Server (Target Node) | 24.04 LTS | Victim endpoint with Wazuh Agent |
-| Kali Linux (Attack Node) | Latest | Adversarial emulation |
+| Kali Linux (Attack Node) | Rolling | Adversarial emulation |
 | Wazuh Manager + Indexer + Dashboard | 4.12.0 | SIEM & FIM engine |
 | n8n (Self-hosted via Docker) | Latest | SOAR orchestration |
 | TheHive | 4.1.24 | Case & incident management |
 | Cassandra | 4 | TheHive backend database |
 | Elasticsearch | 7.17.9 | TheHive search & indexing |
 | Apache2 | 2.4.58 | Web server on target node |
-| ModSecurity | 3.0 | Web Application Firewall |
-| OWASP Core Rule Set (CRS) | 3.3.x | WAF ruleset |
+| ModSecurity | 2.9.7 | Web Application Firewall |
+| OWASP Core Rule Set (CRS) | 3.3.5 | WAF ruleset |
 | Python | 3.12.3 | Active Response scripts |
 
 **External API Keys Required:**
