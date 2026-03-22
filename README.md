@@ -147,15 +147,20 @@ This platform solves the "Context Gap" by using **Google Gemini** to translate r
 ---
 
 ## 📂 Incident Case Management: TheHive 5
-To ensure full auditability and compliance, the SOAR pipeline automatically logs every triaged alert into **TheHive**.
+To ensure full auditability and compliance, the SOAR pipeline automatically logs every triaged alert into **TheHive**, serving as the deterministic "Single Pane of Glass" for Incident Responders.
 
 <img width="1854" height="803" alt="TheHive Case Management Dashboard" src="https://github.com/user-attachments/assets/d9d7125a-e74c-4d1c-8d78-d710cf8e90c2" />
 
 ### 🛠️ Key Case Management Features:
-*   **Automated Case Creation:** n8n dynamically generates cases with standardized naming conventions (e.g., `SOC Incident: Malware Detected`).
-*   **Intelligent Triage Logic:** Within the **File Integrity & Malware Defense Sub-workflow**, the pipeline utilizes a conditional Logic Gate based on the $ThreatScore$ derived from VirusTotal API responses:
-    *   **SOC Incident (Score > 0):** High/Medium severity. Launches the full AI-reporting chain and multi-channel alerting.
-    *   **SOC Audit (Score = 0):** Creates a "Silent" Audit Case for forensic record-keeping without firing intrusive notifications.
+
+*   **Deterministic Case Formatting (No AI Hallucinations):** To preserve strict forensic integrity, the core case description explicitly bypasses the LLM. Instead, the pipeline utilizes n8n's expression engine to directly map raw JSON telemetry from Wazuh and threat intel APIs (AbuseIPDB/VirusTotal) into a highly structured, heavily Markdown-formatted template. This ensures analysts see 100% accurate source data formatted for immediate readability.
+*   **Dynamic IoC Extraction (Observables):** The automation doesn't just dump text; it extracts critical indicators and attaches them as structured **Observables** to the case:
+    *   *Web & Auth Defense:* Automatically parses and attaches the attacker's **IP Address** enriched with its AbuseIPDB confidence score.
+    *   *Malware Defense:* Extracts the **SHA256 Hash** from the `syscheck` payload and attaches it alongside its VirusTotal threat score.
+*   **Automated Threat Correlation:** By injecting standardized Observables, TheHive's graph engine automatically surfaces **Related Cases**. If an IP address that triggered a Web Attack yesterday attempts an SSH Brute Force today, TheHive correlates the Observables automatically. This allows analysts to instantly pivot from investigating isolated alerts to hunting persistent attack campaigns.
+*   **Intelligent Triage Logic (Malware Playbook):** To further eliminate alert fatigue, the pipeline utilizes a conditional Logic Gate based on the $ThreatScore$ derived from VirusTotal API responses:
+    *   **SOC Incident (Score > 0):** High/Medium severity. Flags the case for immediate human response.
+    *   **SOC Audit (Score = 0):** Creates a "Silent" Audit Case. Benign system modifications are logged for forensic record-keeping but bypass the AI-alerting channels to keep analyst queues clean.
 
 <img width="1850" height="797" alt="Malware Incident Flow" src="https://github.com/user-attachments/assets/a51ea94a-383c-4345-a834-729cd8ab02a4" />
 <img width="1848" height="793" alt="Malware Analysis View" src="https://github.com/user-attachments/assets/cf85a2b7-e1ff-4382-9847-f004b967206d" />
