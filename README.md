@@ -129,13 +129,13 @@ for (const item of items) {
 }
 
 // Return only net-new alerts, dropping the spam
-return validItems;```
+return validItems; ```
 
 </details>
+
 <img width="1847" height="793" alt="Auth Defense Workflow" src="https://github.com/user-attachments/assets/5d06e34f-8a8c-4316-ab34-809525f1c54a" />
 
 ---
-
 **File Integrity & Malware Defense**
 
 Real-time FIM across critical system paths (`/var/www/html`, `/etc/apache2`, `/etc/modsecurity`, `/tmp`).
