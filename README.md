@@ -202,9 +202,14 @@ echo 'EICAR-ANTIVIRUS-TEST-STRING' | ssh 192.168.1.X "cat > /tmp/eicar.com"
 
 ### 4. Threat Intelligence & Triage Defense (MITRE T1105)
 *   **Attack:** Simulated file drop on the compromised Ubuntu victim — one known malicious sample and one benign file — to validate the full VirusTotal triage and SOAR routing logic.
+
+**Malicious sample — EICAR test file:**
 ```bash
-cd /tmp
-wget -O eicar_test_sample.com https://secure.eicar.org/eicar.com.txt
+cd /tmp && wget -O eicar_test_sample.com https://secure.eicar.org/eicar.com.txt
+```
+
+**Benign sample — normal file:**
+```bash
 echo "This is a normal configuration file for my website." > /tmp/normal_file.txt
 ```
 
