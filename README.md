@@ -59,7 +59,36 @@ Acts as the central router. It ingests Wazuh JSON webhooks, triages the alert ba
 <img width="1850" height="766" alt="Master Alert Router Logic" src="https://github.com/user-attachments/assets/9b416242-72c7-4622-ae7b-4597376caaed" />
 
 ### 2. Specialized Playbooks
-*   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110). Includes a caching node to "Drop Duplicates" and enriches IP reputation via AbuseIPDB.
+*   **Auth Defense & Credential Access:** Handles SSH Brute Force (T1110) and enriches IP reputation via AbuseIPDB. 
+    *   **🧠 Engineering Highlight (Alert Fatigue Reduction):** To prevent notification spam and API rate-limiting, I engineered a custom JavaScript "Drop Duplicates" node. It leverages n8n's static workflow data to track offending IPs in memory, enforcing a strict 2-minute cooldown window before allowing a duplicate alert to proceed to the SOC.
+
+    <details>
+    <summary><b>💻 Click to view the Custom JS Rate-Limiting Logic</b></summary>
+    
+    ```javascript
+    const staticData = $getWorkflowStaticData('global');
+    const items = $input.all();
+    const validItems = [];
+
+    const now = Date.now();
+    const cooldown = 120000; // 120 seconds (2 minutes)
+
+    for (const item of items) {
+        // Extract the attacker IP from Wazuh's JSON payload
+        const ip = item.json.body?.data?.srcip || "unknown_ip";
+        const lastSeen = staticData[ip] || 0;
+
+        // If the cooldown has passed, allow the alert and reset the timer
+        if (now - lastSeen >= cooldown) {
+            staticData[ip] = now;
+            validItems.push(item);
+        }
+    }
+
+    // Return only net-new alerts, dropping the spam
+    return validItems;
+    ```
+    </details>
 
     <img width="1847" height="793" alt="Auth Defense Workflow" src="https://github.com/user-attachments/assets/5d06e34f-8a8c-4316-ab34-809525f1c54a" />
 
